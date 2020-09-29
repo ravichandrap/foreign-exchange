@@ -1,0 +1,15 @@
+url:
+  exchangeratesapi: https://api.exchangeratesapi.io
+
+server:
+  port: 8085
+
+logging:
+  file:
+    name: foreign-exchange.log
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: foreign-exchange
