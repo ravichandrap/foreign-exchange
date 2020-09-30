@@ -12,6 +12,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -23,10 +25,9 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ErrorResponse> handleAllExceptions(Exception e, WebRequest webRequest) {
         log.error("handleAllExceptions: {}", e.getLocalizedMessage());
 
-        List<String> details = new ArrayList<>();
-        details.add(e.getLocalizedMessage());
-
-        ErrorResponse errorResponse = new ErrorResponse("Server Error", details);
+        final ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                "Server Error",
+                Collections.singletonList(e.getLocalizedMessage()));
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -34,10 +35,19 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ErrorResponse> dateFormatException(DateFormatException e, WebRequest webRequest) {
         log.error("dateFormatException: {}", e.getLocalizedMessage());
 
-        List<String> details = new ArrayList<>();
-        details.add(e.getLocalizedMessage());
+        final ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                "Invalid Date",
+                Collections.singletonList(e.getLocalizedMessage()));
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 
-        ErrorResponse errorResponse = new ErrorResponse("Invalid Date", details);
+    @ExceptionHandler(CurrencySymbolsException.class)
+    public final ResponseEntity<ErrorResponse> currencySymbolsException(CurrencySymbolsException e, WebRequest webRequest) {
+        log.error("dateFormatException: {}", e.getLocalizedMessage());
+
+        final ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                "Invalid Currency symbol",
+                Collections.singletonList(e.getLocalizedMessage()));
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

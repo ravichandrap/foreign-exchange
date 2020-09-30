@@ -1,11 +1,19 @@
 package com.exchange.beans;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-import org.springframework.hateoas.RepresentationModel;
-
+import javax.persistence.*;
+import java.sql.Date;
 import java.time.LocalDate;
 
-public class ExchangeRate extends RepresentationModel<ExchangeRate> {
+@Entity
+@Table(name = "exchange_rate")
+public class ExchangeRateEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private Long id;
     private LocalDate date;
     private double rate;
     private double average;
@@ -13,14 +21,34 @@ public class ExchangeRate extends RepresentationModel<ExchangeRate> {
     private String base;
     private String target;
 
-
-    public ExchangeRate(double exchangeRate, double average, Trend trend, String base, String target, LocalDate date) {
-        this.rate = exchangeRate;
+    public ExchangeRateEntity(Long id, LocalDate date, double rate, double average, Trend trend, String base, String target) {
+        this.id = id;
+        this.date = date;
+        this.rate = rate;
         this.average = average;
         this.trend = trend;
         this.base = base;
         this.target = target;
+    }
+
+    public ExchangeRateEntity(LocalDate date, double rate, double average, Trend trend, String base, String target) {
         this.date = date;
+        this.rate = rate;
+        this.average = average;
+        this.trend = trend;
+        this.base = base;
+        this.target = target;
+    }
+
+    public ExchangeRateEntity() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public double getRate() {
@@ -70,6 +98,7 @@ public class ExchangeRate extends RepresentationModel<ExchangeRate> {
     public void setTarget(String target) {
         this.target = target;
     }
+
 }
 
 

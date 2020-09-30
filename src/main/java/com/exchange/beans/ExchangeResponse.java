@@ -1,17 +1,30 @@
 package com.exchange.beans;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 public class ExchangeResponse {
-    private  Map<String, Map<String, Double>> rates;
+    private Map<String, Map<String, Double>> rates;
+    //    private Rates rates;
     private String base;
     private String start_at;
     private String end_at;
 
+    public ExchangeResponse() {
+    }
+
+    public ExchangeResponse(Map<String, Map<String, Double>> rates, String base, String start_at, String end_at) {
+        this.rates = rates;
+        this.base = base;
+        this.start_at = start_at;
+        this.end_at = end_at;
+    }
+
     public void setBase(String base) {
         this.base = base;
     }
+
     public String getBase() {
         return base;
     }
@@ -40,3 +53,14 @@ public class ExchangeResponse {
         this.rates = rates;
     }
 }
+//
+//class Rates {
+//    private String date;
+//    private List<Currency> currencies;
+//}
+//
+//class Currency {
+//    private String symbol;
+//    private String value;
+//
+//}

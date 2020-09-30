@@ -10,13 +10,6 @@ import org.springframework.context.annotation.Configuration;
 public class ExchangeConfig {
     private String exchangeratesapi;
 
-    @Override
-    public String toString() {
-        return "ExchangeConfig{" +
-                ", exchangeratesapi='" + exchangeratesapi + '\'' +
-                '}';
-    }
-
     public void setExchangeratesapi(String exchangeratesapi) {
         this.exchangeratesapi = exchangeratesapi;
     }

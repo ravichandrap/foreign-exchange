@@ -2,9 +2,10 @@ package com.exchange.http;
 
 import com.exchange.beans.ExchangeRate;
 import com.exchange.beans.ExchangeResponse;
+import com.exchange.beans.ExchangeSymbols;
 import com.exchange.beans.Trend;
 import com.exchange.config.ExchangeConfig;
-import org.apache.commons.math3.util.Precision;
+import com.exchange.exception.CurrencySymbolsException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +18,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.chrono.ChronoLocalDate;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Component
 public class ExchangeHttpService {
     static Logger log = LogManager.getLogger(ExchangeHttpService.class);
+
 
     @Autowired
     ExchangeConfig exchangeConfig;
@@ -34,113 +32,143 @@ public class ExchangeHttpService {
                                            String baseCurrency,
                                            String targetCurrency) throws IOException, InterruptedException {
         log.info("fetchExchangeRates from exchangeratesapi");
-        return getExchangeRate(inputDate, requestExchange(inputDate, baseCurrency, targetCurrency));
+        return getExchangeRate(inputDate, baseCurrency, targetCurrency);
     }
 
-    private ExchangeRate getExchangeRate(LocalDate inputDate, ExchangeResponse response) {
-        double totalPrice = 0.0;
-        for( Map<String, Double> date: response.getRates().values()) {
-            System.out.println(date.values().toArray()[0]);
-            totalPrice += (Double) date.values().toArray()[0];
+    private ExchangeRate getExchangeRate(LocalDate inputDate, String baseCurrency,
+                                         String targetCurrency) throws IOException, InterruptedException {
+        log.info("Calculating exchange rates in getExchangeRate method");
+        final ExchangeResponse exchangeResponse = requestExchange(inputDate, baseCurrency, targetCurrency);
+
+        final Map<String, Map<String, Double>> rates = exchangeResponse.getRates();
+
+        double totalPrice2 = 0.0;
+        int count = 0;
+
+        for (Map.Entry<String, Map<String, Double>> m : rates.entrySet()) {
+            if (!m.getKey().equalsIgnoreCase(inputDate.toString())) {
+                for (Map.Entry<String, Double> innerMap : m.getValue().entrySet()) {
+                    totalPrice2 += innerMap.getValue();
+                    count++;
+                }
+            }
         }
 
-        double average = totalPrice/5;
-        double todayPrice = (Double) response.getRates().get(inputDate.toString()).values().toArray()[0];
-        return new ExchangeRate(todayPrice, average, findTrend(response));
+        final double average = totalPrice2 / count;
+
+//        final double targetPrice = (Double) rates.get(inputDate.toString()).values().toArray()[0];
+        final Double targetPrice = rates.get(inputDate.toString()).get(targetCurrency);
+        return new ExchangeRate(targetPrice, average, findTrend(rates), exchangeResponse.getBase(), targetCurrency, inputDate);
     }
 
-    private Trend findTrend(ExchangeResponse response) {
-        Trend t = Trend.ascending;
+    public ExchangeResponse requestExchange(LocalDate inputDate, String baseCurrency, String targetCurrency) throws IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(getUri(inputDate, baseCurrency, targetCurrency))
+                .timeout(Duration.ofSeconds(10))
+                .header("Content-Type", "application/json")
+                .GET().build();
 
-        Map<LocalDate, Map<String, Double>> rates = new TreeMap<>();
-        for(Map.Entry<String, Map<String, Double>> d: response.getRates().entrySet()) {
-            log.info("key: {}: {}", d.getKey(), d.getValue());
+        final HttpResponse<ExchangeResponse> response = HttpClient.newHttpClient().send(request, new JsonBodyHandler<>(ExchangeResponse.class));
+        return response.body();
+    }
+
+    public URI getUri(LocalDate inputDate, String baseCurrency, String targetCurrency) {
+        return URI.create(exchangeConfig.getExchangeratesapi() +
+                "/history?start_at=" + inputDate.minusDays(7) +
+                "&end_at=" + inputDate +
+                "&base=" + baseCurrency +
+                "&symbols=" + targetCurrency);
+    }
+
+    public Trend findTrend(Map<String, Map<String, Double>> responseRates) {
+        log.info("Finding trend in findTrend method");
+        final Trend t = Trend.ascending;
+
+        final Map<LocalDate, Map<String, Double>> rates = new TreeMap<>();
+
+        for (Map.Entry<String, Map<String, Double>> d : responseRates.entrySet()) {
             rates.put(LocalDate.parse(d.getKey()), d.getValue());
         }
-        log.info("-----------");
-        double []prices = new double[rates.size()];
+        double[] prices = new double[rates.size()];
 
         int count = 0;
-        for(Map.Entry<LocalDate, Map<String, Double>> d: rates.entrySet()) {
-            log.info("key: {}: {}", d.getKey(), d.getValue());
+        for (Map.Entry<LocalDate, Map<String, Double>> d : rates.entrySet()) {
             final Object o = d.getValue().values().toArray()[0];
 //            (Double) d.getValue().values().toArray()[0];
-            prices[count++] = (double)o;
+            prices[count++] = (double) o;
         }
         return getTrend(prices);
     }
 
-    private static Trend getTrend(double[] prices) {
+    public static Trend getTrend(double[] prices) {
         log.info("pricesL{}", prices);
 
-        for(int i = 0; i< prices.length; i++) {
-            System.out.println(prices[i]);
+        for (int i = 0; i < prices.length; i++) {
+            log.info(prices[i]);
         }
 
-        for(int i = 0; i< prices.length; i++) {
-            if(i == prices.length-1) {
+        //constant
+        for (int i = 0; i < prices.length; i++) {
+            if (i == prices.length - 1) {
                 return Trend.constant;
             }
-            if(prices[i] == prices[i+1]) {
+            if (prices[i] == prices[i + 1]) {
                 continue;
             } else {
                 break;
             }
         }
 
-        for(int i = 0; i< prices.length; i++) {
-            if(i == prices.length-1) {
+        //descending
+        for (int i = 0; i < prices.length; i++) {
+            if (i == prices.length - 1) {
                 return Trend.descending;
             }
-            if(prices[i] < prices[i+1]) {
+            if (prices[i] < prices[i + 1]) {
                 break;
             }
         }
 
-        for(int i = 0; i< prices.length; i++) {
-            if(i == prices.length-1) {
+        for (int i = 0; i < prices.length; i++) {
+            if (i == prices.length - 1) {
                 return Trend.ascending;
             }
 
-            if(prices[i] > prices[i+1]) {
+            if (prices[i] > prices[i + 1]) {
                 break;
             }
         }
-
 
         return Trend.undefined;
     }
 
-    private ExchangeResponse requestExchange(LocalDate inputDate, String baseCurrency, String targetCurrency) throws IOException, InterruptedException {
-        final HttpRequest request = HttpRequest.newBuilder(getUri(inputDate, baseCurrency, targetCurrency))
+    public void validateCurrencySymbols(String baseCurrency, String targetCurrency) throws IOException, InterruptedException {
+        final Set<String> symbols = getSymbols();
+
+        if (!(symbols.contains(baseCurrency))) {
+            throw new CurrencySymbolsException("Invalid currency symbol: " + baseCurrency);
+        }
+
+        if (!(symbols.contains(targetCurrency))) {
+            throw new CurrencySymbolsException("Invalid currency symbol: " + targetCurrency);
+        }
+    }
+
+    public Set<String> getSymbols() throws IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.exchangeratesapi.io/latest"))
                 .timeout(Duration.ofSeconds(10))
                 .header("Content-Type", "application/json")
                 .GET().build();
 
-        HttpResponse<ExchangeResponse> response = HttpClient.newHttpClient().send(request, new JsonBodyHandler<>(ExchangeResponse.class));
-        return response.body();
-    }
-
-    private URI getUri(LocalDate inputDate, String baseCurrency, String targetCurrency) {
-        return URI.create(exchangeConfig.getExchangeratesapi() +
-                "/history?start_at=" + inputDate.minusDays(getMinusDays(inputDate)) +
-                "&end_at=" + inputDate +
-                "&base=" + baseCurrency +
-                "&symbols=" + targetCurrency);
-    }
-
-    private long getMinusDays(LocalDate inputDate) {
-        return inputDate.getDayOfWeek().getValue() == 5 ? 5 : 6;
+        HttpResponse<ExchangeSymbols> response = HttpClient.newHttpClient().send(request, new JsonBodyHandler<>(ExchangeSymbols.class));
+        return response.body().getRates().keySet();
     }
 
     public static void main(String[] args) {
-        double []prices = new double[5];
+        double[] prices = new double[5];
         double d = 1.02;
-        for(int i = 0; i< prices.length; i++) {
-//            (Double) d.getValue().values().toArray()[0];
-//            d = d-0.02;
-            prices[i] = d;
-        }
+        //            (Double) d.getValue().values().toArray()[0];
+        //            d = d-0.02;
+        Arrays.fill(prices, d);
         System.out.println(getTrend(prices));
     }
 }

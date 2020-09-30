@@ -5,27 +5,26 @@ import java.util.List;
 
 @XmlRootElement(name = "error")
 public class ErrorResponse {
-    final private String message;
-    final private List<String> details;
+    final private long status;
+    final private String title;
+    final private List<String> description;
 
-    public ErrorResponse(String message, List<String> details) {
-        this.message = message;
-        this.details = details;
+    public ErrorResponse(long status, String title, List<String> description) {
+        this.status = status;
+        this.title = title;
+        this.description = description;
     }
 
-    public String getMessage() {
-        return message;
+    public long getStatus() {
+        return status;
     }
 
-    public List<String> getDetails() {
-        return details;
+    public String getTitle() {
+        return title;
     }
 
-    @Override
-    public String toString() {
-        return "ErrorResponse{" +
-                "message='" + message + '\'' +
-                ", details=" + details +
-                '}';
+    public List<String> getDescription() {
+        return description;
     }
+
 }
