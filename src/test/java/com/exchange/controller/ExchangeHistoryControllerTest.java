@@ -49,7 +49,7 @@ class ExchangeHistoryControllerTest {
         this.targetCurrency = "EUR";
         this.rate = 0.778;
         this.average = 0.6767;
-        this.trend = Trend.ascending;
+        this.trend = Trend.ASCENDING;
 
         this.exchangeRate = new ExchangeRate(this.rate,
                 this.average,
@@ -65,7 +65,7 @@ class ExchangeHistoryControllerTest {
     }
 
     @Test
-    public void dailyTest() {
+    void daily_test() {
         Mockito.when(service.find(inputDate)).thenReturn(rateEntities);
         final int day = inputDate.getDayOfMonth();
         final int month = inputDate.getMonthValue();
@@ -82,7 +82,7 @@ class ExchangeHistoryControllerTest {
     }
 
     @Test
-    public void monthlyTest() {
+    void monthly_test() {
         final int month = inputDate.getMonthValue();
         final int year = inputDate.getYear();
         final LocalDate from = LocalDate.of(year, month, 1);
@@ -102,7 +102,7 @@ class ExchangeHistoryControllerTest {
     }
 
     @Test
-    public void convertEntityToValueForMonthlyTest() {
+    void convert_entity_to_value_for_monthly_test() {
         List<ExchangeRateValue> valueEntities = controller.convertEntityToValueForMonthly(rateEntities);
         assertThat(valueEntities.size()).isEqualTo(rateEntities.size());
         assertThat(valueEntities.get(0)).isNotNull();
@@ -111,7 +111,7 @@ class ExchangeHistoryControllerTest {
     }
 
     @Test
-    public void convertEntityToValueForDailyTest() {
+    void convert_entity_to_value_for_daily_test() {
         List<ExchangeRateValue> valueEntities = controller.convertEntityToValueForDaily(rateEntities);
         assertThat(valueEntities.size()).isEqualTo(rateEntities.size());
         assertThat(valueEntities.get(0).getBase()).isEqualTo(rateEntities.get(0).getBase());
@@ -119,12 +119,10 @@ class ExchangeHistoryControllerTest {
     }
 
     @Test
-    public void copyPropertiesTest() throws Exception {
+    void copy_properties_test() throws Exception {
         ExchangeRateValue value = controller.copyProperties(entity);
         assertThat(value).isNotNull();
         assertThat(value.getAverage()).isEqualTo(entity.getAverage());
         assertThat(value.getBase()).isEqualTo(entity.getBase());
     }
-
-
 }

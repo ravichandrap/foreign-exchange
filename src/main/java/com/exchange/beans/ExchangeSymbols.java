@@ -1,12 +1,12 @@
 package com.exchange.beans;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ExchangeSymbols {
     private Map<String, Double> rates;
     private String base;
     private String date;
-
 
     public void setBase(String base) {
         this.base = base;
@@ -33,11 +33,17 @@ public class ExchangeSymbols {
     }
 
     @Override
-    public String toString() {
-        return "ExchangeSymbols{" +
-                "rates=" + rates +
-                ", base='" + base + '\'' +
-                ", date='" + date + '\'' +
-                '}';
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExchangeSymbols)) return false;
+        ExchangeSymbols that = (ExchangeSymbols) o;
+        return Objects.equals(getRates(), that.getRates()) &&
+                Objects.equals(getBase(), that.getBase()) &&
+                Objects.equals(getDate(), that.getDate());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getRates(), getBase(), getDate());
     }
 }

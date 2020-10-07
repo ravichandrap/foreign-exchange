@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +24,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/api/exchange-rate/history")
 public class ExchangeHistoryController {
-    static Logger log = LogManager.getLogger(ExchangeController.class);
+    private static final Logger log = LogManager.getLogger(ExchangeController.class.getName());
 
     @Autowired
     ExchangeService service;
 
-    //daily
+    /**
+     * Return all daily user requested exchange rate details.
+     * @param year input year number
+     * @param month input month number
+     * @param day input day of month number
+     * @return return list of exchange rate details for user requested input year and month.
+     */
     @GetMapping("/daily/{year}/{month}/{day}")
     public ResponseEntity<List<ExchangeRateValue>> daily(@PathVariable int year,
                                                          @PathVariable int month,
@@ -40,7 +45,12 @@ public class ExchangeHistoryController {
         return new ResponseEntity<>(convertEntityToValueForDaily(entity), HttpStatus.OK);
     }
 
-    //monthly
+    /**
+     * Return all monthly user requested exchange rate details.
+     * @param year input year number.
+     * @param month input month number.
+     * @return return list of exchange rate details for user requested input year and month.
+     */
     @GetMapping("/monthly/{year}/{month}")
     public ResponseEntity<List<ExchangeRateValue>> monthly(@PathVariable int year, @PathVariable int month) {
         log.info("Fetching the monthly history of exchange rate data:{}/{}", year, month);
@@ -53,6 +63,12 @@ public class ExchangeHistoryController {
         return new ResponseEntity<>(convertEntityToValueForMonthly(entity), HttpStatus.OK);
     }
 
+    /**
+     * Convert all list of ExchangeRateEntity into list of ExchangeRateValue value objects
+     * and also generate self and monthly links.
+     * @param entity list of ExchangeRateEntity.
+     * @return list of ExchangeRateValue.
+     */
     public List<ExchangeRateValue> convertEntityToValueForMonthly(List<ExchangeRateEntity> entity) {
         List<ExchangeRateValue> values = new ArrayList<>(entity.size());
 
@@ -66,6 +82,12 @@ public class ExchangeHistoryController {
         return values;
     }
 
+    /**
+     * Convert all list of ExchangeRateEntity into list of ExchangeRateValue value objects
+     * and also generate self and daily links.
+     * @param entity list of ExchangeRateEntity.
+     * @return list of ExchangeRateValue.
+     */
     public List<ExchangeRateValue> convertEntityToValueForDaily(List<ExchangeRateEntity> entity) {
         List<ExchangeRateValue> values = new ArrayList<>(entity.size());
 
@@ -79,9 +101,14 @@ public class ExchangeHistoryController {
         return values;
     }
 
-    public ExchangeRateValue copyProperties(ExchangeRateEntity e) {
+    /**
+     * Convert entity object ExchangeRateEntity into value object ExchangeRateValue
+     * @param entity entity object ExchangeRateEntity
+     * @return value object ExchangeRateValue
+     */
+    public ExchangeRateValue copyProperties(ExchangeRateEntity entity) {
         ExchangeRateValue value = new ExchangeRateValue();
-        BeanUtils.copyProperties(e, value);
+        BeanUtils.copyProperties(entity, value);
         return value;
     }
 }

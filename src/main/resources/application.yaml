@@ -7,9 +7,25 @@ server:
 logging:
   file:
     name: foreign-exchange.log
+  level:
+    root: DEBUG
+    org:
+      hibernate: DEBUG
 
 spring:
   main:
     allow-bean-definition-overriding: true
   application:
     name: foreign-exchange
+  datasource:
+    url: jdbc:h2:mem:exchange
+    driverClassName: org.h2.Driver
+    username: sa
+    password: exchange # TO-DO : Move Password  to env or secure place
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true

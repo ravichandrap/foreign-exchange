@@ -1,24 +1,23 @@
 package com.exchange.beans;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.SortedMap;
 
 public class ExchangeResponse {
     private Map<String, Map<String, Double>> rates;
-    //    private Rates rates;
     private String base;
-    private String start_at;
-    private String end_at;
+    private String startAt;
+    private String endAt;
 
     public ExchangeResponse() {
     }
 
-    public ExchangeResponse(Map<String, Map<String, Double>> rates, String base, String start_at, String end_at) {
+    public ExchangeResponse(SortedMap<String, Map<String, Double>> rates, String base, String startAt, String endAt) {
         this.rates = rates;
         this.base = base;
-        this.start_at = start_at;
-        this.end_at = end_at;
+        this.startAt = startAt;
+        this.endAt = endAt;
     }
 
     public void setBase(String base) {
@@ -29,38 +28,44 @@ public class ExchangeResponse {
         return base;
     }
 
-    public void setStart_at(String start_at) {
-        this.start_at = start_at;
+    public void setStartAt(String startAt) {
+        this.startAt = startAt;
     }
 
-    public void setEnd_at(String end_at) {
-        this.end_at = end_at;
+    public void setEndAt(String endAt) {
+        this.endAt = endAt;
     }
 
-    public String getStart_at() {
-        return start_at;
+    public String getStartAt() {
+        return startAt;
     }
 
-    public String getEnd_at() {
-        return end_at;
+    public String getEndAt() {
+        return endAt;
     }
 
     public Map<String, Map<String, Double>> getRates() {
         return rates;
     }
 
-    public void setRates(Map<String, Map<String, Double>> rates) {
+    public void setRates(SortedMap<String, Map<String, Double>> rates) {
         this.rates = rates;
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExchangeResponse)) return false;
+        ExchangeResponse response = (ExchangeResponse) o;
+        return Objects.equals(getRates(), response.getRates()) &&
+                Objects.equals(getBase(), response.getBase()) &&
+                Objects.equals(getStartAt(), response.getStartAt()) &&
+                Objects.equals(getEndAt(), response.getEndAt());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getRates(), getBase(), getStartAt(), getEndAt());
+    }
 }
-//
-//class Rates {
-//    private String date;
-//    private List<Currency> currencies;
-//}
-//
-//class Currency {
-//    private String symbol;
-//    private String value;
-//
-//}

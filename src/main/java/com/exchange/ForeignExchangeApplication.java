@@ -6,8 +6,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.http.HttpClient;
-
 @EnableConfigurationProperties
 @SpringBootApplication
 public class ForeignExchangeApplication {

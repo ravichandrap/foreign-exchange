@@ -2,8 +2,6 @@ package com.exchange.beans;
 
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.Objects;
 

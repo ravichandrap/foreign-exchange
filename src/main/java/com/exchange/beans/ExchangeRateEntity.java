@@ -1,10 +1,8 @@
 package com.exchange.beans;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import javax.persistence.*;
-import java.sql.Date;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "exchange_rate")
@@ -99,6 +97,24 @@ public class ExchangeRateEntity {
         this.target = target;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExchangeRateEntity)) return false;
+        ExchangeRateEntity entity = (ExchangeRateEntity) o;
+        return Double.compare(entity.getRate(), getRate()) == 0 &&
+                Double.compare(entity.getAverage(), getAverage()) == 0 &&
+                Objects.equals(getId(), entity.getId()) &&
+                Objects.equals(getDate(), entity.getDate()) &&
+                getTrend() == entity.getTrend() &&
+                Objects.equals(getBase(), entity.getBase()) &&
+                Objects.equals(getTarget(), entity.getTarget());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getDate(), getRate(), getAverage(), getTrend(), getBase(), getTarget());
+    }
 }
 
 

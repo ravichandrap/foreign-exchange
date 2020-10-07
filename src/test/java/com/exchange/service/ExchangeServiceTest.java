@@ -4,22 +4,16 @@ import com.exchange.beans.ExchangeRate;
 import com.exchange.beans.ExchangeRateEntity;
 import com.exchange.beans.Trend;
 import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.in;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class ExchangeServiceTest {
@@ -49,7 +43,7 @@ class ExchangeServiceTest {
         this.targetCurrency = "EUR";
         this.rate = 0.778;
         this.average = 0.6767;
-        this.trend = Trend.ascending;
+        this.trend = Trend.ASCENDING;
 
 
         this.exchangeRate = new ExchangeRate(this.rate,
@@ -63,7 +57,7 @@ class ExchangeServiceTest {
 
 
     @Test
-    public void saveTest() {
+    public void save_test() {
         Mockito.when(repository.save(entity)).thenReturn(entity);
 
         ExchangeRateEntity responseEntity = service.save(entity);
@@ -73,7 +67,7 @@ class ExchangeServiceTest {
     }
 
     @Test
-    public void findTest() {
+    public void find_test() {
         Mockito.when(repository.findByDate(inputDate)).thenReturn(Collections.singletonList(entity));
 
         List<ExchangeRateEntity> resEntities = service.find(inputDate);
@@ -85,7 +79,7 @@ class ExchangeServiceTest {
     }
 
     @Test
-    public void findByDateBetweenTest() {
+    public void find_by_date_between_test() {
         final int month = inputDate.getMonthValue();
         final int year = inputDate.getYear();
         final LocalDate from = LocalDate.of(year, month, 1);

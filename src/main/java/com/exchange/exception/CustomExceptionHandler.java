@@ -1,6 +1,5 @@
 package com.exchange.exception;
 
-import com.exchange.controller.ExchangeController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -11,15 +10,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 @Component
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
-    static Logger log = LogManager.getLogger(CustomExceptionHandler.class);
+    private final static Logger log = LogManager.getLogger(CustomExceptionHandler.class.getName());
 
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<ErrorResponse> handleAllExceptions(Exception e, WebRequest webRequest) {

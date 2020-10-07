@@ -4,6 +4,7 @@ package com.exchange.beans;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class ExchangeRate extends RepresentationModel<ExchangeRate> {
     private LocalDate date;
@@ -12,7 +13,6 @@ public class ExchangeRate extends RepresentationModel<ExchangeRate> {
     private Trend trend;
     private String base;
     private String target;
-
 
     public ExchangeRate(double exchangeRate, double average, Trend trend, String base, String target, LocalDate date) {
         this.rate = exchangeRate;
@@ -69,6 +69,25 @@ public class ExchangeRate extends RepresentationModel<ExchangeRate> {
 
     public void setTarget(String target) {
         this.target = target;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ExchangeRate)) return false;
+        if (!super.equals(o)) return false;
+        ExchangeRate that = (ExchangeRate) o;
+        return Double.compare(that.getRate(), getRate()) == 0 &&
+                Double.compare(that.getAverage(), getAverage()) == 0 &&
+                Objects.equals(getDate(), that.getDate()) &&
+                getTrend() == that.getTrend() &&
+                Objects.equals(getBase(), that.getBase()) &&
+                Objects.equals(getTarget(), that.getTarget());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getDate(), getRate(), getAverage(), getTrend(), getBase(), getTarget());
     }
 }
 

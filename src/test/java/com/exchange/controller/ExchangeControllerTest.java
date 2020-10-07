@@ -15,11 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ExchangeControllerTest {
@@ -37,7 +36,7 @@ class ExchangeControllerTest {
     RestTemplate template;
 
     @Test
-    public void contextLoad() {
+    void contextLoad() {
         assertThat(controller).isNotNull();
     }
 
@@ -60,7 +59,7 @@ class ExchangeControllerTest {
         this.targetCurrency = "EUR";
         this.rate = 0.778;
         this.average = 0.6767;
-        this.trend = Trend.ascending;
+        this.trend = Trend.ASCENDING;
 
         this.exchangeRate = new ExchangeRate(this.rate,
                 this.average,
@@ -72,9 +71,9 @@ class ExchangeControllerTest {
     }
 
     @Test
-    public void fetchExchangeRatesTest() throws IOException, InterruptedException {
+    void fetch_exchange_rates_test() throws Exception {
         Mockito.doNothing().when(httpService).validateCurrencySymbols(baseCurrency, targetCurrency);
-        Mockito.doNothing().when(service).save(entity);
+        Mockito.when(service.save(entity)).thenReturn(entity);
 
         Mockito.when(httpService.fetchExchangeRates(inputDate, baseCurrency, targetCurrency)).thenReturn(exchangeRate);
         ResponseEntity<ExchangeRate> rateResponseEntity = controller.fetchExchangeRates(date, baseCurrency, targetCurrency);
@@ -87,7 +86,14 @@ class ExchangeControllerTest {
     }
 
     @Test
-    public void copyPropertiesTest() {
+    void fetch_exchange_rates_exception_test() throws Exception {
+        assertThrows(DateFormatException.class, () -> {
+            controller.fetchExchangeRates("1999-12-01", baseCurrency, targetCurrency);
+        });
+    }
+
+    @Test
+    void copy_properties_test() {
         final ExchangeRateEntity entity = controller.copyProperties(exchangeRate);
         assertThat(entity.getAverage()).isEqualTo(exchangeRate.getAverage());
         assertThat(entity.getBase()).isEqualTo(exchangeRate.getBase());
@@ -98,13 +104,13 @@ class ExchangeControllerTest {
     }
 
     @Test
-    public void validateInputDateTest() {
+    void validate_input_date_test() throws Exception {
         final LocalDate localDate = controller.validateInputDate(date);
-        assertThat(localDate).isEqualTo(date);
+        assertThat(localDate).isEqualTo(inputDate);
     }
 
     @Test
-    public void validateInputDateDateFormatExceptionTest() {
+    void validate_input_date_date_format_exception_test() {
         assertThrows(DateFormatException.class, () -> {
             controller.validateInputDate(errDate);
         });
